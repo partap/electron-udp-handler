@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, protocol } = require('electron')
 const path = require('path')
 
 function createWindow () {
@@ -16,15 +16,60 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 }
 
+function initUdpHandler () {
+  // API for Electron >= 9.x
+  const success = protocol.registerStringProtocol('udp', (request, callback) => {
+    console.info('handling udp protocol:', request.url)
+    //
+    // Open external program here
+    //
+
+    // Crashes
+    // callback(request.url)
+
+    // These aslo crash:
+    //
+    // callback('')
+    // callback({ data: request.url })
+    // callback({ data: null })
+    // callback({ data: '' })
+
+    // These don't crash, but typescript won't compile them
+    //
+    // callback()
+    // callback(null)
+  })
+  if (success) {
+    console.info('registered udp protocol')
+  } else {
+    console.warn('failed to register udp protocol')
+  }
+
+  // // API for Electron < 9.x
+  // protocol.registerStringProtocol('udp', (request, callback) => {
+  //   console.info('handling udp protocol:', request.url)
+  //   //
+  //   // Open external program here
+  //   //
+  //   callback(request.url)
+  // }, (error) => {
+  //   if (error) {
+  //     console.warn('Failed to register udp protocol:', error)
+  //   } else {
+  //     console.info('registered udp protocol')
+  //   }
+  // })
+}
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  initUdpHandler()
   createWindow()
-  
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
