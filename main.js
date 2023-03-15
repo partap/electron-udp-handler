@@ -21,7 +21,7 @@ function createWindow () {
 
 function initUdpHandler () {
   // API for Electron >= 9.x
-  const success = protocol.registerStringProtocol('udp', (request, callback) => {
+  const success = protocol.registerBufferProtocol('udp', (request, callback) => {
     console.info('handling udp protocol:', request.url)
     //
     // Open external program here
@@ -37,6 +37,10 @@ function initUdpHandler () {
     // callback({ data: null })
     // callback({ data: '' })
 
+    callback({
+      mimeType: 'text/html', 
+      data: Buffer.from('<html><head></head><body>Ignore me</body></html>')
+    })
     // These don't crash, but typescript won't compile them
     //
     // callback()
